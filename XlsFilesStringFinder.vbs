@@ -54,7 +54,7 @@ If continueCicle Then
     RepSh.Range("$E$2").Font.Bold = True
 
     Set result0 = CreateObject("System.Collections.ArrayList")
-    Set result0 = Recurse(CARTELLALOCALE, RepSh)
+    Set result0 = Ricors(CARTELLALOCALE, RepSh)
 
     RepSh.range("A1").ColumnWidth = 90
     For Each elem In result0
@@ -119,7 +119,7 @@ Else
 End If
 'End Main commands
 
-Function Recurse(sPath, ByRef sheet)
+Function Ricors(sPath, ByRef sheet)
 
     Set returncollection = CreateObject("System.Collections.ArrayList")
     Set FSO = CreateObject("Scripting.FileSystemObject")
@@ -137,7 +137,7 @@ Function Recurse(sPath, ByRef sheet)
 
     For Each mySubFolder In myFolder.SubFolders
 
-        For Each elem In Recurse(mySubFolder.Path, sheet)
+        For Each elem In Ricors(mySubFolder.Path, sheet)
             returncollection.add(elem)
 
         Next
