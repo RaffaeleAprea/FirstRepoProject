@@ -1,9 +1,11 @@
+'Alternative branch where I'm migrating into VBS a later version of the project that is instead written in VBdotNET
+
 Option Explicit Off
 
 'LANGUAGE = "VBScript"
 Module ExcelFileFinder
     Sub Main()
-
+        
         continueCicle = True
         FSO2 = CreateObject("Scripting.FileSystemObject")
         CARTELLALOCALE = FSO2.GetAbsolutePathName(".")
