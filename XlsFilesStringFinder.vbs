@@ -1,23 +1,56 @@
-Language="VBScript"
+LANGUAGE="VBScript"
 
-
-continueCicle = True 'In VBS and VBA variable type declaration is sometimes not necessary
+continueCicle = True
 Set FSO2 = CreateObject("Scripting.FileSystemObject")
 cartellaLocale = FSO2.GetAbsolutePathName(".")
 
 ELEM_ITEM = InputBox("Inserisci stringa da Trovare in questa Cartella e in tutte le sue Sotto-Cartelle","Cerca nei File Excel")
-continueCicle = (ELEM_ITEM<>"") 'Just Testing is such assignment thing works
-
+continueCicle = (ELEM_ITEM<>"")
 if continueCicle Then
-    Set result0 = CreateObject("System.Collections.ArrayList")
-    Set result0 = Ricors (cartellaLocale)
+    set result0 = CreateObject("System.Collections.ArrayList")
+    set result0 = Recurse (cartellaLocale)
 
-    'Set WinScriptHost = CreateObject("WScript.Shell")  :Doesn't work for me 
+    Set WinScriptHost = CreateObject("WScript.Shell")
 
     for each elem in result0
             stringa = stringa & elem.name & VBcrlf
     next 
- 
+    msgbox stringa
+    Set objExcel = CreateObject("Excel.Application")
+    for each elem in result0
+        'stringa = stringa & elem.name & VBcrlf
+        if continuecicle and (FSO2.FileExists(elem.Path))then
+
+            On Error Resume next
+            
+            Set objWorkbook = objExcel.Workbooks.Open(elem.Path)
+            if err.Number = 0 then
+
+                objExcel.Application.Visible = False
+                'msgbox elem.Path
+                For Each sh In objExcel.Worksheets
+                    sh.Activate           
+                    Set found = sh.usedrange.Find (ELEM_ITEM, , -4123) 'in VB-> "Find(what:="abc", LookIn:=xlFormulas)" bacause ':=' is not valid in VBS like it does in VB
+
+                    If Not found Is Nothing Then
+                    
+                    found.Select
+                    objExcel.Application.Visible = True
+                    Msgbox "Trovato << " & ELEM_ITEM & " >> " & VBCRLF & VBCRLF &  "nel file" & elem.Path & VBCRLF & VBCRLF & "nella cella [" & found.address &"]"
+      
+                    Else
+                        
+                    End If
+                        objWorkbook.Close
+                        'Set objExcel = Nothing
+                Next
+                'objExcel.Application.Visible = True
+            On Error Goto 0
+            End if
+
+        End if
+
+    next
     msgbox "Ricerca Conclusa"
 Else
     msgbox "Ricerca Annullata"
