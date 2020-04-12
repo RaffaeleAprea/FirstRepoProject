@@ -4,7 +4,7 @@ LANGUAGE = "VBScript"
 
 'Main commands
 continueCicle = True
-FSO2 = CreateObject("Scripting.FileSystemObject")
+Set FSO2 = CreateObject("Scripting.FileSystemObject")
 CARTELLALOCALE = FSO2.GetAbsolutePathName(".")
 ELEM_ITEM = InputBox("Inserisci stringa da Trovare in questa Cartella e in tutte le sue Sotto-Cartelle", "Cerca nei File Excel")
 continueCicle = (ELEM_ITEM <> "") 'Same boolean variable is used also to break a loop in the script
@@ -35,7 +35,7 @@ If continueCicle Then
     RepSh.Range("$E$1").Value = "DataOra:"
     RepSh.Range("$E$1").Font.Bold = True
     RepSh.Range("$E$1").HorizontalAlignment = -4152
-    RepSh.Range("$F$1").Value = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")
+    RepSh.Range("$F$1").Value = FormatDateTime( Now, 1) & " " & FormatDateTime(Now, 4)
     RepSh.Range("$F$1").Font.Bold = True
     RepSh.Range("$F$1").NumberFormat = "d/m/yy h.mm;@"
     RepSh.Range("A1").ColumnWidth = 20
@@ -63,7 +63,7 @@ If continueCicle Then
         RepSh.Cells(cellNumb, 3).Value = "Nessuno"
         RepSh.Cells(cellNumb, 4).Value = "Nessuna"
         RepSh.Cells(cellNumb, 5).Value = "Nessuno"
-        cellNumb += 1
+        cellNumb = cellNumb + 1
     Next
 
     cellNumb = 3
@@ -74,7 +74,7 @@ If continueCicle Then
             On Error Resume Next
 
             RepSh.Cells(cellNumb, 2).Value = "Apertura in Corso .. "
-            objWorkbook = objExcel.Workbooks.Open(elem.Path)
+            Set objWorkbook = objExcel.Workbooks.Open(elem.Path)
 
             If Err.Number = 0 Then
                 RepSh.Cells(cellNumb, 2).Value = "Analisi in Corso .."
@@ -83,7 +83,7 @@ If continueCicle Then
                 For Each sh In objExcel.Worksheets
 
                     sh.Activate
-                    found = sh.usedrange.Find(ELEM_ITEM, , -4123) '(what:="abc", LookIn:=xlFormulas)
+                    Set found = sh.usedrange.Find(ELEM_ITEM, , -4123) '(what:="abc", LookIn:=xlFormulas)
 
                     If Not found Is Nothing Then
 
@@ -143,6 +143,6 @@ Function Ricors(sPath, ByRef sheet)
         Next
 
     Next
-    Return returncollection
+    Set Ricors = returncollection
 
 End Function
