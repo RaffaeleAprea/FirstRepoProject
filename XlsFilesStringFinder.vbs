@@ -1,122 +1,156 @@
-LANGUAGE              = "VBScript"
+Option Explicit Off
 
-continueCicle         = True
-Set FSO2              = CreateObject("Scripting.FileSystemObject")
-CARTELLALOCALE        = FSO2.GetAbsolutePathName(".")
-ELEM_ITEM             = InputBox("Inserisci stringa da Trovare in questa Cartella e in tutte le sue Sotto-Cartelle","Cerca nei File Excel")
-continueCicle         = (ELEM_ITEM<>"")
+'LANGUAGE = "VBScript"
+Module ExcelFileFinder
+    Sub Main()
 
-If continueCicle Then
+        continueCicle = True
+        FSO2 = CreateObject("Scripting.FileSystemObject")
+        CARTELLALOCALE = FSO2.GetAbsolutePathName(".")
+        ELEM_ITEM = InputBox("Inserisci stringa da Trovare in questa Cartella e in tutte le sue Sotto-Cartelle", "Cerca nei File Excel")
+        continueCicle = (ELEM_ITEM <> "")
 
-    Set objExcel      = CreateObject("Excel.Application")
-    Set ReportExcel   = CreateObject("Excel.Application") 
+        If continueCicle Then
 
-    ReportExcel.Application.Visible = True
-    Set ReportWorkbook = ReportExcel.Workbooks.Add()
-    set RepSh = ReportExcel.Worksheets(1)
-    cellNumb = 3
+            objExcel = CreateObject("Excel.Application")        'OGGETTO D'ANALISI
+            ReportExcel = CreateObject("Excel.Application")     'OGGETTO DI REPORT
 
-    RepSh.Range("$A$1").Value = "ELEMENTI TROVATI"
-    RepSh.Range("$A$1").Font.Bold = True
-    RepSh.Range("$B$1").Value = 0
-    RepSh.Range("$B$1").Font.Bold = True
-    RepSh.Range("$C$1").Value = "Stringa di Input"
-    RepSh.Range("$C$1").Font.Bold = True
-    RepSh.Range("$D$1").Value = ELEM_ITEM
-    RepSh.Range("$D$1").Font.Bold = True
-    RepSh.Range("$C$1").Value = "DataOra"
-    RepSh.Range("$C$1").Font.Bold = True
-    RepSh.Range("$D$1").Value = ELEM_ITEM
-    RepSh.Range("$D$1").Font.Bold = True
-    RepSh.range("A1").ColumnWidth = 20
-    RepSh.range("B1").ColumnWidth = 45
-    RepSh.range("C1").ColumnWidth = 30
-    RepSh.Range("$A$2").Value = "ELEMENTO PUNTATO"
-    RepSh.Range("$A$2").Font.Bold = True
-    RepSh.Range("$B$2").Value = "STATO"
-    RepSh.Range("$B$2").Font.Bold = True
-    RepSh.Range("$C$2").Value = "ESITO"
-    RepSh.Range("$C$2").Font.Bold = True
+            ReportExcel.Application.Visible = True
+            ReportWorkbook = ReportExcel.Workbooks.Add()
+            RepSh = ReportExcel.Worksheets(1)
+            cellNumb = 3
 
-    set result0       = CreateObject("System.Collections.ArrayList")
-    set result0       = Ricors (CARTELLALOCALE , RepSh )
-    RepSh.range("A1").ColumnWidth = 100
-    For Each elem in result0
-        RepSh.Cells( cellNumb , 1 ).Value = elem.Path
-        RepSh.Cells( cellNumb , 2 ).Value = "Non Valutato"
-        RepSh.Cells( cellNumb , 3 ).Value = "Nessuno"
-    cellNumb = cellNumb + 1
-    Next 
-   
-    
-    cellNumb = 3
-    For Each elem in result0
-        'stringa = stringa & elem.name & VBcrlf
-        if continuecicle And (FSO2.FileExists(elem.Path)) Then
+            RepSh.Range("$A$1").Value = "ELEMENTI TROVATI:"
+            RepSh.Range("$A$1").HorizontalAlignment = -4152 'destra
+            RepSh.Range("$A$1").Font.Bold = True
+            RepSh.Range("$B$1").Value = 0
+            RepSh.Range("$B$1").HorizontalAlignment = -4131 'sinistra
+            RepSh.Range("$B$1").Font.Bold = True
+            RepSh.Range("$C$1").Value = "Stringa di Input:"
+            RepSh.Range("$C$1").Font.Bold = True
+            RepSh.Range("$C$1").HorizontalAlignment = -4152
+            RepSh.Range("$D$1").Value = ELEM_ITEM
+            RepSh.Range("$D$1").Font.Bold = True
+            RepSh.Range("$E$1").Value = "DataOra:"
+            RepSh.Range("$E$1").Font.Bold = True
+            RepSh.Range("$E$1").HorizontalAlignment = -4152
+            RepSh.Range("$F$1").Value = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")
+            RepSh.Range("$F$1").Font.Bold = True
+            RepSh.Range("$F$1").NumberFormat = "d/m/yy h.mm;@"
+            RepSh.Range("A1").ColumnWidth = 20
+            RepSh.Range("B1").ColumnWidth = 45
+            RepSh.Range("C1").ColumnWidth = 30
+            RepSh.Range("E1").ColumnWidth = 20
+            RepSh.Range("$A$2").Value = "ELEMENTO PUNTATO"
+            RepSh.Range("$A$2").Font.Bold = True
+            RepSh.Range("$B$2").Value = "STATO"
+            RepSh.Range("$B$2").Font.Bold = True
+            RepSh.Range("$C$2").Value = "ESITO"
+            RepSh.Range("$C$2").Font.Bold = True
+            RepSh.Range("$D$2").Value = "CELLA"
+            RepSh.Range("$D$2").Font.Bold = True
+            RepSh.Range("$E$2").Value = "FOGLIO"
+            RepSh.Range("$E$2").Font.Bold = True
 
-            On Error Resume next
-            
-            RepSh.Cells( cellNumb , 2 ).Value = "Apertura in Corso .. "
-            Set objWorkbook = objExcel.Workbooks.Open(elem.Path)
+            result0 = CreateObject("System.Collections.ArrayList")
+            result0 = Recurse(CARTELLALOCALE, RepSh)
+            RepSh.range("A1").ColumnWidth = 90
+            For Each elem In result0
+                RepSh.Cells(cellNumb, 1).Value = elem.Path
+                RepSh.Cells(cellNumb, 2).Value = "Non Valutato"
+                RepSh.Cells(cellNumb, 3).Value = "Nessuno"
+                RepSh.Cells(cellNumb, 4).Value = "Nessuna"
+                RepSh.Cells(cellNumb, 5).Value = "Nessuno"
+                cellNumb += 1
+            Next
 
-            if err.Number = 0 Then
-                RepSh.Cells( cellNumb , 2 ).Value = "Analisi in Corso"
-                objExcel.Application.Visible = False
-                RepSh.Cells( cellNumb , 3 ).Value = "Negativo"
-                For Each sh In objExcel.Worksheets
 
-                    sh.Activate           
-                    Set found = sh.usedrange.Find (ELEM_ITEM, , -4123) '(what:="abc", LookIn:=xlFormulas)
+            cellNumb = 3
+            For Each elem In result0
+                'stringa = stringa & elem.name & VBcrlf
+                If continueCicle And (FSO2.FileExists(elem.Path)) Then
 
-                    If Not found Is Nothing Then
-                    
-                    found.Select
-                    RepSh.Cells( cellNumb , 3 ).Value = "Positivo"
-           
+                    On Error Resume Next
+
+                    RepSh.Cells(cellNumb, 2).Value = "Apertura in Corso .. "
+                    objWorkbook = objExcel.Workbooks.Open(elem.Path)
+
+                    If Err.Number = 0 Then
+                        RepSh.Cells(cellNumb, 2).Value = "Analisi in Corso .."
+                        objExcel.Application.Visible = False
+                        RepSh.Cells(cellNumb, 3).Value = "Negativo"
+                        For Each sh In objExcel.Worksheets
+
+                            sh.Activate
+                            found = sh.usedrange.Find(ELEM_ITEM, , -4123) '(what:="abc", LookIn:=xlFormulas)
+
+                            If Not found Is Nothing Then
+
+                                found.Select
+                                'Msgbox "Trovato << " & ELEM_ITEM & " >> " & VBCRLF & VBCRLF &  "nel file" & elem.Path & VBCRLF & VBCRLF & "nella cella [" & found.address &"]"
+                                RepSh.Cells(cellNumb, 3).Value = "Positivo"
+                                RepSh.Cells(cellNumb, 3).Interior.Color = RGB(180, 255, 180)
+                                RepSh.Cells(cellNumb, 4).Value = "" & found.address
+                                RepSh.Cells(cellNumb, 4).Interior.Color = RGB(180, 255, 180)
+                                RepSh.Cells(cellNumb, 5).Value = "" & sh.Name
+                                RepSh.Cells(cellNumb, 5).Interior.Color = RGB(180, 255, 180)
+
+                            End If
+
+
+                        Next
+                        objWorkbook.Close(False)
+                        RepSh.Cells(cellNumb, 2).Value = "Analisi Conclusa"
+
+                    Else
+                        RepSh.Cells(cellNumb, 2).Value = "Apertura Fallita"
+                        RepSh.Cells(cellNumb, 2).Interior.Color = RGB(255, 180, 180)
                     End If
-                        
-                Next
-                objWorkbook.Close
-                RepSh.Cells( cellNumb , 2 ).Value = "Analisi Conclusa"
-            Else
-                RepSh.Cells( cellNumb , 2 ).Value = "Apertura Fallita"
-            End if
-            
-            On Error Goto 0
 
-        End if
+                    On Error GoTo 0
 
-        cellNumb = cellNumb + 1
+                End If
 
-    Next
-    msgbox "Ricerca Conclusa"
-Else
-    msgbox "Ricerca Annullata"
-End if
+                cellNumb = cellNumb + 1
 
-Function Ricors(sPath , ByRef sheet) 
-    Set returncollection = CreateObject("System.Collections.ArrayList")     
-    Set FSO = CreateObject("Scripting.FileSystemObject")
-    Set myFolder = FSO.GetFolder(sPath)
+            Next
+            MsgBox("Ricerca Conclusa")
+        Else
+            MsgBox("Ricerca Annullata")
+        End If
+        'msgbox stringa
+    End Sub
 
-    For Each myFile In myFolder.Files
+    Public Function Recurse(sPath, ByRef sheet)
+        returncollection = CreateObject("System.Collections.ArrayList")
+        ' Dim FSO As New FileSystemObject
+        'Dim myFolder As Folder
+        'Dim mySubFolder As Folder
+        FSO = CreateObject("Scripting.FileSystemObject")
 
-        nomefile = MyFile.name
-        if Right(nomefile,5) = ".xlsx" Or Right(nomefile,4) = ".xls" Then
-            returncollection.add MyFile
-            sheet.Range("$B$1").Value = sheet.Range("$B$1").Value + 1
-        End if
+        myFolder = FSO.GetFolder(sPath)
 
-    Next
+        For Each myFile In myFolder.Files
 
-    For Each mySubFolder In myFolder.SubFolders
-        
-        for Each elem in Recurse(mySubFolder.Path , sheet)
-            returncollection.add elem
-           
-        next
-        
-    Next
-    set Recurse = returncollection
+            nomefile = myFile.name
+            If Right(nomefile, 5) = ".xlsx" Or Right(nomefile, 4) = ".xls" Then
+                returncollection.add(myFile)
+                sheet.Range("$B$1").Value = sheet.Range("$B$1").Value + 1
+            End If
 
-End Function
+
+            'msgbox returncollection.count
+        Next
+
+        For Each mySubFolder In myFolder.SubFolders
+
+            For Each elem In Recurse(mySubFolder.Path, sheet)
+                returncollection.add(elem)
+
+            Next
+
+        Next
+        Return returncollection
+
+    End Function
+End Module
